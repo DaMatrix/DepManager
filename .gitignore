@@ -1,0 +1,11 @@
+/.idea/
+*.iml
+*.ipr
+*.class
+*.jar
+target/
+/run/
+/.gradle/
+/build/
+/tmp
+/temp
