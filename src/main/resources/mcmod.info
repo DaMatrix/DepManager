@@ -1,0 +1,20 @@
+[
+  {
+    "modid": "depmanager",
+    "name": "DepManager",
+    "description": "Allows your mods to depend on maven artifacts without shading them into your jar!",
+    "version": "${version}",
+    "mcversion": "${mcversion}",
+    "url": "http://daporkchop.net",
+    "updateUrl": "",
+    "authorList": [
+      "DaPorkchop_"
+    ],
+    "credits": "",
+    "logoFile": "",
+    "screenshots": [],
+    "dependencies": [
+      ""
+    ]
+  }
+]
