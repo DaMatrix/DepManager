@@ -13,30 +13,17 @@
  *
  */
 
-package net.daporkchop.depmanager.config;
+package net.daporkchop.depmanager;
 
-import java.util.List;
+import javax.swing.*;
 
 /**
- * Represents the configuration of any dependency
- *
  * @author DaPorkchop_
  */
-public class DependencyConfig {
-    public String name;
-
-    public List<Dep> dependencies;
-
-    public List<Repo> repositories;
-
-    public static class Dep {
-        public String groupId;
-        public String artifactId;
-        public String version;
-    }
-
-    public static class Repo {
-        public String id;
-        public String url;
+public class Prompt {
+    public static boolean continueDownloadOnError(String dep, String cfg) {
+        return JOptionPane.showConfirmDialog(null, "Unable to resolve dependency \"" + dep
+                        + "\n (required by \"" + cfg + "\"). Continue startup?",
+                "Dependency resolution error", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION;
     }
 }

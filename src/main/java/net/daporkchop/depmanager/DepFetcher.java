@@ -16,6 +16,7 @@
 package net.daporkchop.depmanager;
 
 import net.daporkchop.depmanager.config.DependencyConfig;
+import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.ProgressManager;
 import org.apache.maven.repository.internal.MavenRepositorySystemUtils;
 import org.eclipse.aether.DefaultRepositorySystemSession;
@@ -41,9 +42,10 @@ import org.eclipse.aether.util.artifact.JavaScopes;
 import org.eclipse.aether.util.filter.DependencyFilterUtils;
 
 import java.io.File;
-import java.util.Arrays;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -59,21 +61,29 @@ public class DepFetcher {
     private static DefaultServiceLocator locator = MavenRepositorySystemUtils.newServiceLocator();
     private static RepositorySystem system = newRepositorySystem(locator);
     private static RepositorySystemSession session = newSession(system);
-    private static RemoteRepository porkchop = new RemoteRepository.Builder("DaPorkchop_", "default", "http://maven.daporkchop.net/").build();
+    private static RemoteRepository central = new RemoteRepository.Builder("central", "default", "https://repo.maven.apache.org/maven2/").build(),
+            curse = new RemoteRepository.Builder("CurseForge", "default", "https://minecraft.curseforge.com/api/maven/").build();
 
     public static Collection<File> fetch(Set<DependencyConfig> configs) {
         final Map<String, File> files = new Hashtable<>();
         ProgressManager.ProgressBar progressBar = ProgressManager.push("Fetching dependencies", configs.size());
         configs.forEach(config -> {
             progressBar.step(config.name);
+            logger.info("Resolving dependencies for " + config.name + "...");
+            List<RemoteRepository> repositories = new ArrayList<>();
+            repositories.add(central);
+            repositories.add(curse);
+            config.repositories.forEach(repo -> repositories.add(new RemoteRepository.Builder(repo.id, "default", repo.url).build()));
+
             ProgressManager.ProgressBar depBar = ProgressManager.push(config.name, config.dependencies.size());
             config.dependencies.forEach(dep -> {
                 depBar.step(dep.groupId + "." + dep.artifactId + ":" + dep.version);
+                logger.info("  Resolving " + depBar.getMessage() + "...");
 
                 try {
                     Artifact artifact = new DefaultArtifact(dep.groupId + ":" + dep.artifactId + ":" + dep.version);
 
-                    CollectRequest collectRequest = new CollectRequest(new Dependency(artifact, JavaScopes.COMPILE), Arrays.asList(porkchop));
+                    CollectRequest collectRequest = new CollectRequest(new Dependency(artifact, JavaScopes.COMPILE), repositories);
                     DependencyFilter filter = DependencyFilterUtils.classpathFilter(JavaScopes.COMPILE);
                     DependencyRequest request = new DependencyRequest(collectRequest, filter);
                     DependencyResult result = system.resolveDependencies(session, request);
@@ -83,8 +93,10 @@ public class DepFetcher {
                     });
                 } catch (DependencyResolutionException e) {
                     e.printStackTrace();
+                    if (!Prompt.continueDownloadOnError(depBar.getMessage(), config.name)) {
+                        FMLCommonHandler.instance().exitJava(1, false);
+                    }
                 }
-                //logger.warn("Unable to find artifact \"" + dep.groupId + "." + dep.artifactId + ":" + dep.version + "\n for configuration \"" + config.name + "\n");
             });
             ProgressManager.pop(depBar);
         });
