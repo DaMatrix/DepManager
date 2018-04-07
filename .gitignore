@@ -2,7 +2,6 @@
 *.iml
 *.ipr
 *.class
-*.jar
 /target/
 /run/
 /.gradle/
