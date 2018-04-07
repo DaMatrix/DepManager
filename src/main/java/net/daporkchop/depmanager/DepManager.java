@@ -17,6 +17,7 @@ package net.daporkchop.depmanager;
 
 import net.daporkchop.depmanager.config.ConfigParser;
 import net.daporkchop.depmanager.config.DependencyConfig;
+import net.minecraft.launchwrapper.Launch;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLConstructionEvent;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
@@ -26,6 +27,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.io.File;
+import java.net.MalformedURLException;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -52,7 +55,14 @@ public class DepManager {
         logger = LogManager.getLogger("depmanager");
 
         ModScanner.RAW_CONFIG.forEach(raw -> configs.add(ConfigParser.parse(raw)));
-        DepFetcher.fetch(configs);
+        Collection<File> files = DepFetcher.fetch(configs);
+        files.forEach(file -> {
+            try {
+                Launch.classLoader.addURL(file.toURI().toURL());
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     @Mod.EventHandler
@@ -66,7 +76,8 @@ public class DepManager {
     }
 
     @Mod.EventHandler
-    public void postinit(FMLPostInitializationEvent event) {
-
+    public void postinit(FMLPostInitializationEvent event) throws Exception {
+        Class.forName("net.daporkchop.lib.math.vector.d.Vec2d");
+        logger.info("YEAH BOII THIS WORKS!");
     }
 }

@@ -15,9 +15,7 @@
 
 package net.daporkchop.depmanager;
 
-import com.google.common.collect.Sets;
 import net.daporkchop.depmanager.config.DependencyConfig;
-import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.ProgressManager;
 import org.apache.maven.repository.internal.MavenRepositorySystemUtils;
 import org.eclipse.aether.DefaultRepositorySystemSession;
@@ -42,8 +40,14 @@ import org.eclipse.aether.transport.http.HttpTransporterFactory;
 import org.eclipse.aether.util.artifact.JavaScopes;
 import org.eclipse.aether.util.filter.DependencyFilterUtils;
 
+import java.io.File;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Hashtable;
+import java.util.Map;
 import java.util.Set;
+
+import static net.daporkchop.depmanager.DepManager.logger;
 
 /**
  * Actually downloads the mods into the classpath
@@ -57,7 +61,8 @@ public class DepFetcher {
     private static RepositorySystemSession session = newSession(system);
     private static RemoteRepository porkchop = new RemoteRepository.Builder("DaPorkchop_", "default", "http://maven.daporkchop.net/").build();
 
-    public static void fetch(Set<DependencyConfig> configs) {
+    public static Collection<File> fetch(Set<DependencyConfig> configs) {
+        final Map<String, File> files = new Hashtable<>();
         ProgressManager.ProgressBar progressBar = ProgressManager.push("Fetching dependencies", configs.size());
         configs.forEach(config -> {
             progressBar.step(config.name);
@@ -72,6 +77,10 @@ public class DepFetcher {
                     DependencyFilter filter = DependencyFilterUtils.classpathFilter(JavaScopes.COMPILE);
                     DependencyRequest request = new DependencyRequest(collectRequest, filter);
                     DependencyResult result = system.resolveDependencies(session, request);
+                    result.getArtifactResults().forEach(artifactResult -> {
+                        Artifact a = artifactResult.getArtifact();
+                        files.put(a.getGroupId() + ":" + a.getArtifactId() + ":" + a.getVersion(), a.getFile());
+                    });
                 } catch (DependencyResolutionException e) {
                     e.printStackTrace();
                 }
@@ -80,7 +89,9 @@ public class DepFetcher {
             ProgressManager.pop(depBar);
         });
         ProgressManager.pop(progressBar);
-        FMLCommonHandler.instance().exitJava(0, true);
+        logger.info("Resolved " + files.size() + " dependencies:");
+        files.keySet().forEach(s -> logger.info("        " + s));
+        return files.values();
     }
 
     private static RepositorySystem newRepositorySystem(DefaultServiceLocator locator) {
@@ -95,17 +106,5 @@ public class DepFetcher {
         LocalRepository localRepo = new LocalRepository(DepManager.REPOSITORY);
         session.setLocalRepositoryManager(system.newLocalRepositoryManager(session, localRepo));
         return session;
-    }
-
-    public static void main(String... args) {
-        DependencyConfig.Dep dep = new DependencyConfig.Dep();
-        dep.groupId = "net.daporkchop.lib";
-        dep.artifactId = "crypto";
-        dep.version = "0.1.1";
-        DependencyConfig config = new DependencyConfig();
-        config.name = "Test!";
-        config.dependencies = Arrays.asList(dep);
-        fetch(Sets.newHashSet(config));
-        //this works, why doesn't the other one?
     }
 }
