@@ -56,7 +56,12 @@ repositories {
 }
 
 dependencies {
-    compile 'org.apache.ivy:ivy:2.4.0'
+    compile 'org.eclipse.aether:aether-impl:1.1.0'
+    compile 'org.eclipse.aether:aether-connector-basic:1.1.0'
+    compile 'org.eclipse.aether:aether-transport-file:1.1.0'
+    compile 'org.eclipse.aether:aether-transport-http:1.1.0'
+    compile 'org.apache.maven:maven-aether-provider:3.3.9'
+    //compile 'org.apache.maven.shared:maven-invoker:2.2'
 }
 
 processResources {
@@ -101,12 +106,18 @@ allprojects {
 }
 
 shadowJar {
-    dependencies {
-        include(dependency('org.apache.ivy:ivy:2.4.0'))
-    }
     classifier = 'full'
 }
 
 build.dependsOn(shadowJar)
+
+jar {
+    manifest {
+        attributes(
+                'FMLCorePluginContainsFMLMod': 'true',
+                'FMLCorePlugin': 'net.daporkchop.depmanager.LoadingPlugin'
+        )
+    }
+}
 
 sourceCompatibility = targetCompatibility = "1.8"

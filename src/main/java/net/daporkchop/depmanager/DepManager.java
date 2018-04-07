@@ -25,6 +25,7 @@ import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -32,14 +33,17 @@ import java.util.Set;
         name = DepManager.MOD_NAME,
         version = DepManager.VERSION)
 public class DepManager {
+    public static final File REPOSITORY = new File(".", "/depmanager/repo");
     public static final String MOD_ID = "depmanager";
     public static final String MOD_NAME = "DepManager";
     public static final String VERSION = "0.0.1";
-
     @Mod.Instance(MOD_ID)
     public static DepManager INSTANCE;
-
     public static Logger logger;
+
+    static {
+        REPOSITORY.mkdirs();
+    }
 
     private Set<DependencyConfig> configs = new HashSet<>();
 
@@ -48,6 +52,7 @@ public class DepManager {
         logger = LogManager.getLogger("depmanager");
 
         ModScanner.RAW_CONFIG.forEach(raw -> configs.add(ConfigParser.parse(raw)));
+        DepFetcher.fetch(configs);
     }
 
     @Mod.EventHandler
