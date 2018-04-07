@@ -34,6 +34,12 @@ version = modVersion
 group = modGroup
 archivesBaseName = modBaseName
 
+configurations.all {
+    resolutionStrategy {
+        force("com.google.guava:guava:21.0")
+    }
+}
+
 minecraft {
     version = project.forgeVersion
     runDir = "run"
@@ -61,7 +67,7 @@ dependencies {
     compile 'org.eclipse.aether:aether-transport-file:1.1.0'
     compile 'org.eclipse.aether:aether-transport-http:1.1.0'
     compile 'org.apache.maven:maven-aether-provider:3.3.9'
-    //compile 'org.apache.maven.shared:maven-invoker:2.2'
+    compile 'net.daporkchop.lib:crypto:0.1.1'
 }
 
 processResources {

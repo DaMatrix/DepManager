@@ -3,10 +3,11 @@
 *.ipr
 *.class
 *.jar
-target/
+/target/
 /run/
 /.gradle/
 /build/
 /tmp
 /temp
 /run
+/signer/target

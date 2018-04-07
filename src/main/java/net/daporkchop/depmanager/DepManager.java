@@ -17,6 +17,10 @@ package net.daporkchop.depmanager;
 
 import net.daporkchop.depmanager.config.ConfigParser;
 import net.daporkchop.depmanager.config.DependencyConfig;
+import net.daporkchop.lib.crypto.key.ec.impl.ECDSAKeyPair;
+import net.daporkchop.lib.crypto.sig.HashTypes;
+import net.daporkchop.lib.crypto.sig.ec.impl.ECDSAHelper;
+import net.daporkchop.lib.hash.Base58WithHeaders;
 import net.minecraft.launchwrapper.Launch;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLConstructionEvent;
@@ -37,6 +41,14 @@ import java.util.Set;
         version = DepManager.VERSION)
 public class DepManager {
     public static final File REPOSITORY = new File(".", "/depmanager/repo");
+    /**
+     * An ECDSA public key for verifying signatures on repository URLs
+     */
+    public static final ECDSAKeyPair PUBLIC_KEY = ECDSAKeyPair.decodePublic(
+            Base58WithHeaders.decode(
+                    "7PubKey1Yzp5r52tNKKLJPaWKQXFu4K57WkQJkPNRpk8NczUxusvC6WdfbqnNbm2JRbf257JX9VR82UztrJynmZVHM7QxMotXm25bo3bEQLiWwaDe3EWxaKZjAaDWFPdem3knbFtr7WERkB2xZnttSiA9ynP5bR5tYCfpGxSCFR3Qv58EybeoK9FPB7UBR354gt7WBRTkrq8Fc5ryCX474iRx2N79bQCUJEeYdBe9gDhs2Za1wRT3Vwe3ie75tF6s5QN1ANGdT1CxUSkfQXpATrWoYwMPgdMMqCchWSsD1w3ewdZaB3huSutcm9W4iUfGs3bLwQdWNVjt8KHvtQATCKAVuvGgXksvbN3Zzowspd3UDT1XguSWFhSwuP1yusLvbPeW5B2ZT9yM4bo9LLvYXZ1W4R6nfYBxxTph2tGhdFYZVDhQoXh1SqQyBDnEdTc33j1Cze8xopoVTec4NazfkdTQb3wnw7mRQYZ9fBWiHxF2ibV1viPD49U3ARiaj32kRj2kR6vBvmYN3r"
+            ).content);
+    public static final ECDSAHelper HELPER = new ECDSAHelper(HashTypes.SHA_512);
     public static final String MOD_ID = "depmanager";
     public static final String MOD_NAME = "DepManager";
     public static final String VERSION = "0.0.1";

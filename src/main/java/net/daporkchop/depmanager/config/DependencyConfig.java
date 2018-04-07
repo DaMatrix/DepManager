@@ -33,10 +33,12 @@ public class DependencyConfig {
         public String groupId;
         public String artifactId;
         public String version;
+        public String classifier;
     }
 
     public static class Repo {
         public String id;
         public String url;
+        public String signature;
     }
 }

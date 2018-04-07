@@ -26,4 +26,10 @@ public class Prompt {
                         + "\n (required by \"" + cfg + "\"). Continue startup?",
                 "Dependency resolution error", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION;
     }
+
+    public static boolean invalidSignature(String url, String cfg) {
+        return JOptionPane.showConfirmDialog(null, "Invalid or missing signature on repository \"" + url
+                        + "\n (required by \"" + cfg + "\"). Continue startup?",
+                "Repository verification error", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION;
+    }
 }

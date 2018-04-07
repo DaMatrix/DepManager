@@ -16,6 +16,7 @@
 package net.daporkchop.depmanager;
 
 import net.daporkchop.depmanager.config.DependencyConfig;
+import net.daporkchop.lib.encoding.basen.Base58;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 import net.minecraftforge.fml.common.ProgressManager;
 import org.apache.maven.repository.internal.MavenRepositorySystemUtils;
@@ -42,6 +43,7 @@ import org.eclipse.aether.util.artifact.JavaScopes;
 import org.eclipse.aether.util.filter.DependencyFilterUtils;
 
 import java.io.File;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Hashtable;
@@ -61,7 +63,7 @@ public class DepFetcher {
     private static DefaultServiceLocator locator = MavenRepositorySystemUtils.newServiceLocator();
     private static RepositorySystem system = newRepositorySystem(locator);
     private static RepositorySystemSession session = newSession(system);
-    private static RemoteRepository central = new RemoteRepository.Builder("central", "default", "https://repo.maven.apache.org/maven2/").build(),
+    private static RemoteRepository //central = new RemoteRepository.Builder("central", "default", "https://repo.maven.apache.org/maven2/").build(),
             curse = new RemoteRepository.Builder("CurseForge", "default", "https://minecraft.curseforge.com/api/maven/").build();
 
     public static Collection<File> fetch(Set<DependencyConfig> configs) {
@@ -71,17 +73,27 @@ public class DepFetcher {
             progressBar.step(config.name);
             logger.info("Resolving dependencies for " + config.name + "...");
             List<RemoteRepository> repositories = new ArrayList<>();
-            repositories.add(central);
+            //repositories.add(central);
             repositories.add(curse);
-            config.repositories.forEach(repo -> repositories.add(new RemoteRepository.Builder(repo.id, "default", repo.url).build()));
+            config.repositories.forEach(repo -> {
+                if (!(repo.signature == null || repo.signature.isEmpty()) && DepManager.HELPER.verify(Base58.decodeBase58(repo.signature), repo.url.getBytes(Charset.forName("UTF-8")), DepManager.PUBLIC_KEY)) {
+                    repositories.add(new RemoteRepository.Builder(repo.id, "default", repo.url).build());
+                } else {
+                    if (!Prompt.invalidSignature(String.valueOf(repo.url), config.name)) {
+                        FMLCommonHandler.instance().exitJava(1, false);
+                    } else {
+                        repositories.add(new RemoteRepository.Builder(repo.id, "default", repo.url).build());
+                    }
+                }
+            });
 
             ProgressManager.ProgressBar depBar = ProgressManager.push(config.name, config.dependencies.size());
             config.dependencies.forEach(dep -> {
-                depBar.step(dep.groupId + "." + dep.artifactId + ":" + dep.version);
+                depBar.step(dep.groupId + ":" + dep.artifactId + (dep.classifier.isEmpty() ? "" : ":jar:" + dep.classifier) + ":" + dep.version);
                 logger.info("  Resolving " + depBar.getMessage() + "...");
 
                 try {
-                    Artifact artifact = new DefaultArtifact(dep.groupId + ":" + dep.artifactId + ":" + dep.version);
+                    Artifact artifact = new DefaultArtifact(depBar.getMessage());
 
                     CollectRequest collectRequest = new CollectRequest(new Dependency(artifact, JavaScopes.COMPILE), repositories);
                     DependencyFilter filter = DependencyFilterUtils.classpathFilter(JavaScopes.COMPILE);
@@ -89,7 +101,7 @@ public class DepFetcher {
                     DependencyResult result = system.resolveDependencies(session, request);
                     result.getArtifactResults().forEach(artifactResult -> {
                         Artifact a = artifactResult.getArtifact();
-                        files.put(a.getGroupId() + ":" + a.getArtifactId() + ":" + a.getVersion(), a.getFile());
+                        files.put(a.getGroupId() + ":" + a.getArtifactId() + ":" + a.getVersion() + ":" + a.getClassifier(), a.getFile());
                     });
                 } catch (DependencyResolutionException e) {
                     e.printStackTrace();
