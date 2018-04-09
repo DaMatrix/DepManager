@@ -10,7 +10,7 @@ DepManager is a Minecraft Forge mod that allows your mod to depend on Maven arti
 Using DepManager is really easy. Just make a file called `<whatever you like>.depmanager.json` in your resources folder, or really anywhere that will result in the file being copied into your output JAR's root.
 The contents of this file should be formatted like this:
 
-```json
+```js
 {
     "name": "Cool mod!",
     "dependencies": [
