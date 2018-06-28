@@ -35,33 +35,13 @@ import java.util.Set;
 @SuppressWarnings({"deprecation", "unchecked"})
 public class LoadingPlugin implements IFMLLoadingPlugin {
     public LoadingPlugin() throws Exception {
+        //i think this is just debug code? not sure anymore tbh
         URL url = getClass().getProtectionDomain().getCodeSource().getLocation();
         URI uri = url.toURI();
         File file = new File(uri);
         FMLLog.info("URL: " + url);
         FMLLog.info("URI: " + uri);
         FMLLog.info("File: " + file.getAbsolutePath());
-        //Launch.classLoader.addURL(url);
-
-        FMLLog.info("Hackery time! Let's remove \"org.apache.\" from the LaunchClassLoader exclusions.");
-        try {
-            Field field = LaunchClassLoader.class.getDeclaredField("classLoaderExceptions");
-            field.setAccessible(true);
-            Set<String> classLoaderExceptions = (Set<String>) field.get(Launch.classLoader);
-            if (classLoaderExceptions.contains("org.apache.")) {
-                classLoaderExceptions.remove("org.apache.");
-
-                classLoaderExceptions.add("org.apache.commons");
-                classLoaderExceptions.add("org.apache.http");
-                classLoaderExceptions.add("org.apache.logging");
-                FMLLog.info("Removed!");
-            } else {
-                FMLLog.bigWarning("ClassLoader exception list didn't contain \"org.apache.\"! Things will probably break!");
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-            FMLCommonHandler.instance().exitJava(1, true);
-        }
     }
 
     @Override

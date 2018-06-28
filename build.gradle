@@ -113,6 +113,15 @@ allprojects {
 
 shadowJar {
     classifier = 'full'
+
+    relocate 'org.apache.maven', 'net.daporkchop.depmanager.dependency.apache.maven'
+    relocate 'org.apache.http', 'net.daporkchop.depmanager.dependency.apache.http'
+    relocate 'org.apache.commons', 'net.daporkchop.depmanager.dependency.apache.commons'
+    relocate 'org.bouncycastle', 'net.daporkchop.depmanager.dependency.bouncycastle'
+    relocate 'org.codehaus', 'net.daporkchop.depmanager.dependency.codehaus'
+    relocate 'com.google.common', 'net.daporkchop.depmanager.dependency.google.common'
+    relocate 'com.google.thirdparty', 'net.daporkchop.depmanager.dependency.google.thirdparty'
+    relocate 'net.daporkchop.lib', 'net.daporkchop.depmanager.dependency.daporkchop.porklib'
 }
 
 build.dependsOn(shadowJar)

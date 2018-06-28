@@ -51,7 +51,7 @@ public class DepManager {
     public static final ECDSAHelper HELPER = new ECDSAHelper(HashTypes.SHA_512);
     public static final String MOD_ID = "depmanager";
     public static final String MOD_NAME = "DepManager";
-    public static final String VERSION = "0.0.1";
+    public static final String VERSION = "0.0.2";
     @Mod.Instance(MOD_ID)
     public static DepManager INSTANCE;
     public static Logger logger;
@@ -79,17 +79,13 @@ public class DepManager {
 
     @Mod.EventHandler
     public void preinit(FMLPreInitializationEvent event) {
-
     }
 
     @Mod.EventHandler
     public void init(FMLInitializationEvent event) {
-
     }
 
     @Mod.EventHandler
     public void postinit(FMLPostInitializationEvent event) throws Exception {
-        Class.forName("net.daporkchop.lib.math.vector.d.Vec2d");
-        logger.info("YEAH BOII THIS WORKS!");
     }
 }
